@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="mg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalontsika</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+	<!-- Lien vers le fichier manifest pour l'installation Android/PWA -->
+	<link rel="manifest" href="manifest.json">
+
+	<!-- Icône de secours pour le navigateur web et iOS (Apple) -->
+	<link rel="apple-touch-icon" href="icon-192.png">
+	<link rel="icon" type="image/png" href="icon-192.png">
+  
+  <!-- Inscription de la bibliothèque PDF.js pour affichage interne -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+
+  <!-- OVERLAY (Arrière-plan sombre quand le menu est ouvert) -->
+  <div id="side-menu-overlay" class="menu-overlay" onclick="toggleMenu()"></div>
+
+  <!-- MENU LATÉRAL (Side Drawer) -->
+  <nav id="side-menu" class="side-menu">
+    <div class="side-menu-header">
+      <div class="brand">
+        <i class="fa-solid fa-fleur-de-lis scout-logo"></i>
+        <span>Kalontsika</span>
+      </div>
+      <button class="close-menu-btn" onclick="toggleMenu()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <ul class="side-menu-links">
+      <li onclick="selectMenuItem('home-screen')">
+        <i class="fa-solid fa-house"></i>
+        <span>Fandraisana</span>
+      </li>
+      <li onclick="selectMenuItem('songs-screen')">
+        <i class="fa-solid fa-music"></i>
+        <span>Ireo Kalontsika</span>
+      </li>
+      <li onclick="selectMenuItem('books-screen')">
+        <i class="fa-solid fa-book"></i>
+        <span>Boky</span>
+      </li>
+      <li onclick="selectMenuItem('games-screen')">
+        <i class="fa-solid fa-gamepad"></i>
+        <span>Lalao</span>
+      </li>
+      <li onclick="selectMenuItem('fanentanana-screen')">
+        <i class="fa-solid fa-bullhorn"></i>
+        <span>Fanentanana</span>
+      </li>
+      <!-- BOUTON DE MISE À JOUR DYNAMIQUE -->
+      <li onclick="checkUpdates()">
+        <i class="fa-solid fa-arrows-rotate"></i>
+        <span>Havaozy (Mis à jour)</span>
+      </li>
+      <li onclick="selectMenuItem('about-screen')">
+        <i class="fa-solid fa-user-gear"></i>
+        <span>Momba ny mpanoratra</span>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- BARRE EN-TÊTE AVEC RECHERCHE ET À PROPOS -->
+  <header class="app-header">
+    <div class="header-left">
+      <i class="fa-solid fa-bars menu-icon" onclick="toggleMenu()"></i>
+      <div class="brand">
+       <img src="icon-192.png" alt="logo" class="nav-icon">
+        <span>Kalontsika</span>
+      </div>
+    </div>
+    
+    <div class="header-right">
+      <i class="fa-solid fa-magnifying-glass header-btn" onclick="toggleGlobalSearch()"></i>
+      <i class="fa-solid fa-circle-info header-btn" onclick="navigateTo('about-screen')"></i>
+    </div>
+
+    <!-- CHAMP DE RECHERCHE GÉNÉRALE DÉROULANT -->
+    <div id="global-search-bar" class="global-search-bar">
+      <input type="text" id="global-search-input" placeholder="Tadiavo ny hira, boky, lalao..." oninput="handleGlobalSearch(this.value)">
+      <i class="fa-solid fa-xmark close-search-btn" onclick="toggleGlobalSearch()"></i>
+    </div>
+  </header>
+
+  <!-- CONTENU PRINCIPAL -->
+  <main class="main-content">
+
+    <!-- PAGE D'ACCUEIL -->
+    <div id="home-screen" class="screen active">
+      <div class="hero-container">
+        <img src="images/hero-bg.png" alt="Kalontsika Citation" class="hero-img">
+      </div>
+      <div class="modules-grid">
+        <div class="module-card" onclick="navigateTo('songs-screen')">
+          <img src="images/kalontsika.png" alt="Ireo Kalontsika">
+        </div>
+        <div class="module-card" onclick="navigateTo('books-screen')">
+          <img src="images/boky.png" alt="Boky">
+        </div>
+        <div class="module-card" onclick="navigateTo('games-screen')">
+          <img src="images/lalao.png" alt="Lalao">
+        </div>
+        <div class="module-card" onclick="navigateTo('fanentanana-screen')">
+          <img src="images/fanentanana.png" alt="Fanentanana">
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 1 : IREO KALONTSIKA -->
+    <div id="songs-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2>Ireo Kalontsika</h2>
+      </div>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Tadiavo ny hira...">
+      </div>
+      <ul id="song-list" class="item-list"></ul>
+    </div>
+
+    <!-- PAGE LECTEUR MUSIQUE -->
+    <div id="player-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('songs-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2>Mihira</h2>
+      </div>
+      <div class="player-container">
+        <h3 id="current-title">--</h3>
+        <p id="current-artist">--</p>
+        <audio id="audio-player" controls></audio>
+        <div class="lyrics-box">
+          <h4>TONON-KIRA</h4>
+          <pre id="lyrics-display">--</pre>
+        </div>
+      </div>
+    </div>
+
+   <!-- PAGE 2 : BOKY -->
+    <div id="books-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2>Boky (PDF)</h2>
+      </div>
+      <ul class="item-list">
+        
+        <!-- Document 1 -->
+        <li class="item-card book-item">
+          <div class="book-info">
+            <i class="fa-solid fa-file-pdf pdf-icon"></i>
+            <div class="doc-info">
+              <h4>Boky Ralaivo TP2</h4>
+            </div>
+          </div>
+          <div class="book-actions">
+            <button class="btn-action btn-read" onclick="viewPDF('documents/BokyRailovytp2.pdf', 'Boky Ralaivo TP2')">
+              <i class="fa-solid fa-eye"></i> Hamaky
+            </button>
+            <a href="documents/BokyRailovytp2.pdf" download="Boky_Ralaivo_TP2.pdf" class="btn-action btn-download">
+              <i class="fa-solid fa-download"></i> Telecharger
+            </a>
+          </div>
+        </li>
+
+        <!-- Document 2 -->
+        <li class="item-card book-item">
+          <div class="book-info">
+            <i class="fa-solid fa-file-pdf pdf-icon"></i>
+            <div class="doc-info">
+              <h4>Boky Tsidihy TP2</h4>
+            </div>
+          </div>
+          <div class="book-actions">
+            <button class="btn-action btn-read" onclick="viewPDF('documents/BokyTsidihy.pdf', 'Boky Tsidihy TP2')">
+              <i class="fa-solid fa-eye"></i> Hamaky
+            </button>
+            <a href="documents/BokyTsidihy.pdf" download="Boky_Tsidihy_TP2.pdf" class="btn-action btn-download">
+              <i class="fa-solid fa-download"></i> Telecharger
+            </a>
+          </div>
+        </li>
+
+        <!-- Document 3 -->
+        <li class="item-card book-item">
+          <div class="book-info">
+            <i class="fa-solid fa-file-pdf pdf-icon"></i>
+            <div class="doc-info">
+              <h4>FIHIAKA MILOFO TP2</h4>
+            </div>
+          </div>
+          <div class="book-actions">
+            <button class="btn-action btn-read" onclick="viewPDF('documents/FIHIAKAMILOFOTP2.pdf', 'FIHIAKA MILOFO TP2')">
+              <i class="fa-solid fa-eye"></i> Hamaky
+            </button>
+            <a href="documents/FIHIAKAMILOFOTP2.pdf" download="FIHIAKA_MILOFO_TP2.pdf" class="btn-action btn-download">
+              <i class="fa-solid fa-download"></i> Telecharger
+            </a>
+          </div>
+        </li>
+
+        <!-- Document 4 -->
+        <li class="item-card book-item">
+          <div class="book-info">
+            <i class="fa-solid fa-file-pdf pdf-icon"></i>
+            <div class="doc-info">
+              <h4>TP2 Barao</h4>
+            </div>
+          </div>
+          <div class="book-actions">
+            <button class="btn-action btn-read" onclick="viewPDF('documents/TP2Barao.pdf', 'TP2 Barao')">
+              <i class="fa-solid fa-eye"></i> Hamaky
+            </button>
+            <a href="documents/TP2Barao.pdf" download="TP2_Barao.pdf" class="btn-action btn-download">
+              <i class="fa-solid fa-download"></i> Telecharger
+            </a>
+          </div>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- PAGE LECTEUR PDF -->
+    <div id="pdf-viewer-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="closePDFViewer()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2 id="pdf-view-title">Hamaky Boky</h2>
+      </div>
+      <div id="pdf-scroll-container" class="pdf-scroll-container">
+      </div>
+    </div>
+
+    <!-- PAGE 3 : LALAO -->
+    <div id="games-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2>Listy ny Lalao</h2>
+      </div>
+      <ul class="item-list">
+        <li class="item-card"><i class="fa-solid fa-gamepad"></i> <div><h4>Lalao an-tsaha</h4><p>Lalao ivelany sy mavitrika</p></div></li>
+      </ul>
+    </div>
+
+    <!-- PAGE 4 : FANENTANANA (LISTE DYNAMIQUE) -->
+    <div id="fanentanana-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2>Fanentanana</h2>
+      </div>
+      <div class="search-box">
+        <input type="text" id="fanentanana-search-input" placeholder="Tadiavo ny fanentanana..." oninput="filterFanentanana(this.value)">
+      </div>
+      <ul id="fanentanana-list" class="item-list">
+        <!-- Généré dynamiquement par JS -->
+      </ul>
+    </div>
+
+    <!-- PAGE DETAILS & LECTEUR AUDIO FANENTANANA -->
+    <div id="fanentanana-details-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('fanentanana-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2 id="fanentanana-detail-title">Fanentanana</h2>
+      </div>
+      
+      <div class="player-container">
+        <div class="fanentanana-header-info">
+          <i class="fa-solid fa-hands-clapping detail-icon"></i>
+          <h3 id="fanentanana-title">--</h3>
+          <span id="fanentanana-category" class="category-badge badge-fanentanana">--</span>
+        </div>
+
+        <!-- Lecteur Audio -->
+        <audio id="fanentanana-audio-player" controls style="width: 100%; margin: 1rem 0;"></audio>
+
+        <!-- Description & Instructions -->
+        <div class="lyrics-box">
+          <h4>MOMBA NY FANENTANANA</h4>
+          <p id="fanentanana-description" style="margin-bottom: 1rem; line-height: 1.5; color: #333;">--</p>
+          
+          <h4>FOMBA FANAOVANA AZY</h4>
+          <pre id="fanentanana-instructions" style="white-space: pre-wrap; font-family: inherit; line-height: 1.5; color: #444;">--</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 5 : MOMBA NY MPANORATRA (À PROPOS) -->
+    <div id="about-screen" class="screen">
+      <div class="section-header">
+        <button class="back-btn" onclick="navigateTo('home-screen')"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2>Momba ny mpanoratra</h2>
+      </div>
+
+      <div class="about-container">
+        <div class="profile-card">
+          <div class="profile-avatar">
+            <i class="fa-solid fa-user-ninja"></i>
+          </div>
+          <h3>FIHIAKA Milofo</h3>
+          <p class="profile-tagline">Mpamorona sy mpandrindra ny fampiharana</p>
+        </div>
+
+        <div class="about-card">
+          <h4><i class="fa-solid fa-compass"></i> Ny Zava-pantany sy ny Lalana nodiavina</h4>
+          <p>
+            Ity fampiharana ity dia novolavolaina mba hanamora ny fidirana sy ny fampiasana ireo 
+            hira, boky, lalao ary fanentanana samihafa amin'ny fomba tsotra sy tsy mila rezo.
+          </p>
+        </div>
+
+        <div class="about-card">
+          <h4><i class="fa-solid fa-flag"></i> Tarigetra</h4>
+          <p>
+            Fitiavan-tanindrazana sy fampandrosoana ny firenena amin'ny alalan'ny fitaovana ara-teknolojia.
+          </p>
+        </div>
+
+        <div class="signature-box">
+          <p>Natao tamin'ny fitiavana,</p>
+          <span class="signature-text">FIHIAKA Milofo</span>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="songs-data.js"></script>
+  <script src="fanentanana-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
