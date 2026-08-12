@@ -52,6 +52,11 @@ jobs:
         run: |
           cordova create build_tmp com.kalontsika.app Kalontsika
           cp config.xml build_tmp/
+          
+          # Copie des icones et fichiers PNG dans le dossier racine de build_tmp pour Cordova
+          cp *.png build_tmp/ 2>/dev/null || true
+          
+          # Nettoyage et copie des fichiers de l'application dans www
           rm -rf build_tmp/www/*
           cp -r index.html build_tmp/www/ 2>/dev/null || true
           cp -r *.js build_tmp/www/ 2>/dev/null || true
