@@ -26,13 +26,10 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Configuration de Gradle (v8.7)
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.7'
-
-      - name: Configuration du SDK Android
+      - name: Configuration du SDK Android et Build Tools
         uses: android-actions/setup-android@v3
+        with:
+          build-tools: '33.0.2'
 
       - name: Installation de Cordova
         run: npm install -g cordova
