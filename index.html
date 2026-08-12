@@ -6,15 +6,17 @@
   <title>Kalontsika</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-	<!-- Lien vers le fichier manifest pour l'installation Android/PWA -->
-	<link rel="manifest" href="manifest.json">
-
-	<!-- Icône de secours pour le navigateur web et iOS (Apple) -->
-	<link rel="apple-touch-icon" href="icon-192.png">
-	<link rel="icon" type="image/png" href="icon-192.png">
   
-  <!-- Inscription de la bibliothèque PDF.js pour affichage interne -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Lien vers le fichier manifest pour l'installation Android/PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Icône de secours pour le navigateur web et iOS (Apple) -->
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  
+  <!-- Inscription de la bibliothèque PDF.js en local (pour mode hors-ligne/Cordova) -->
+  <script src="pdf.js"></script>
+  <script src="pdf.worker.js"></script>
 </head>
 <body>
 
@@ -71,7 +73,7 @@
     <div class="header-left">
       <i class="fa-solid fa-bars menu-icon" onclick="toggleMenu()"></i>
       <div class="brand">
-       <img src="icon-192.png" alt="logo" class="nav-icon">
+        <img src="icon-192.png" alt="logo" class="nav-icon">
         <span>Kalontsika</span>
       </div>
     </div>
@@ -327,6 +329,10 @@
 
   </main>
 
+  <!-- Integration Cordova (necessaire pour le build APK/Cordova) -->
+  <script src="cordova.js"></script>
+
+  <!-- Fichiers de données et logique JavaScript -->
   <script src="songs-data.js"></script>
   <script src="fanentanana-data.js"></script>
   <script src="app.js"></script>
