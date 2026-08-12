@@ -31,10 +31,13 @@ jobs:
         with:
           gradle-version: '8.7'
 
-      - name: Configuration du SDK Android et Build Tools
+      - name: Configuration du SDK Android
         uses: android-actions/setup-android@v3
-        with:
-          build-tools: '33.0.2'
+
+      - name: Installation manuelle des Build-Tools 33.0.2
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33"
 
       - name: Installation de Cordova
         run: npm install -g cordova
