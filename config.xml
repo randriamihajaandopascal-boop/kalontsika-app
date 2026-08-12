@@ -2,7 +2,7 @@
 <widget id="com.kalontsika.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>Ny Kalontsika</name>
     <description>Application de chants Scout</description>
-    <author email="dev@example.com">Milofo</author>
+    <author email="dev@example.com">Fihiaka Milofo</author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
