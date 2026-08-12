@@ -100,12 +100,12 @@ function playSong(song) {
   navigateTo('player-screen');
 }
 
-// Configuration du Worker PDF.js local
+// Configuration du Worker PDF.js
 if (typeof pdfjsLib !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 }
 
-// Fonction pour charger et afficher toutes les pages du PDF (compatible Cordova & hors-ligne)
+// Fonction universelle pour charger et afficher le PDF (Web / Cordova)
 async function viewPDF(pdfUrl, title) {
   document.getElementById('pdf-view-title').innerText = title;
   const container = document.getElementById('pdf-scroll-container');
@@ -113,50 +113,60 @@ async function viewPDF(pdfUrl, title) {
   
   navigateTo('pdf-viewer-screen');
 
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', pdfUrl, true);
-  xhr.responseType = 'arraybuffer';
+  try {
+    let loadingTask;
 
-  xhr.onload = async function() {
-    if (this.status === 200 || this.status === 0) { // status 0 est valide pour file:// dans Cordova
-      try {
-        const typedarray = new Uint8Array(this.response);
-        const pdf = await pdfjsLib.getDocument(typedarray).promise;
-        container.innerHTML = '';
-
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const canvas = document.createElement('canvas');
-          canvas.className = 'pdf-page-canvas';
-          canvas.style.width = '100%';
-          container.appendChild(canvas);
-
-          const context = canvas.getContext('2d');
-          const viewport = page.getViewport({ scale: 1.5 });
-
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
-
-          const renderContext = {
-            canvasContext: context,
-            viewport: viewport
-          };
-          await page.render(renderContext).promise;
-        }
-      } catch (error) {
-        console.error("Erreur lors de l'affichage du PDF:", error);
-        container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Misy olana ny hamakiana ny boky.</div>';
-      }
+    // Tentative 1 : Chargement via XMLHttpRequest (ArrayBuffer) pour Cordova / local file://
+    if (window.location.protocol === 'file:' || window.cordova) {
+      const arrayBuffer = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', pdfUrl, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onload = function() {
+          if (this.status === 200 || this.status === 0) resolve(this.response);
+          else reject(new Error("Erreur HTTP " + this.status));
+        };
+        xhr.onerror = () => reject(new Error("Erreur réseau XHR"));
+        xhr.send();
+      });
+      loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) });
     } else {
-      container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Tsy hita ny boky.</div>';
+      // Tentative 2 : Chargement standard par URL pour le Web (Netlify/HTTP)
+      loadingTask = pdfjsLib.getDocument(pdfUrl);
     }
-  };
 
-  xhr.onerror = function() {
-    container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Tsy tafiditra ny boky.</div>';
-  };
+    const pdf = await loadingTask.promise;
+    container.innerHTML = '';
 
-  xhr.send();
+    // Rendu de chaque page sur un canvas
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const canvas = document.createElement('canvas');
+      canvas.className = 'pdf-page-canvas';
+      canvas.style.width = '100%';
+      canvas.style.marginBottom = '10px';
+      container.appendChild(canvas);
+
+      const context = canvas.getContext('2d');
+      const viewport = page.getViewport({ scale: 1.5 });
+
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
+    }
+  } catch (error) {
+    console.error("Erreur d'affichage du PDF:", error);
+    container.innerHTML = `
+      <div style="text-align:center; color:red; padding:20px;">
+        <p>Misy olana ny hamakiana ny boky.</p>
+        <p style="font-size:0.8rem; color:#666;">Jereo jeo hoe misy tokoa ve ny fichier ao amin'ny dossier "documents/".</p>
+      </div>
+    `;
+  }
 }
 
 function closePDFViewer() {
