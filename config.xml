@@ -7,4 +7,5 @@
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
+    <icon src="icon-512.png" />
 </widget>
