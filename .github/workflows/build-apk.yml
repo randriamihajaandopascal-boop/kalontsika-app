@@ -26,6 +26,11 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Configuration de Gradle (v8.7)
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.7'
+
       - name: Configuration du SDK Android et Build Tools
         uses: android-actions/setup-android@v3
         with:
@@ -51,6 +56,8 @@ jobs:
           cp -r build_assets/* build_tmp/www/ 2>/dev/null || true
 
       - name: Ajout de la plateforme Android et Build
+        env:
+          CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL: "https://services.gradle.org/distributions/gradle-8.7-bin.zip"
         run: |
           cd build_tmp
           cordova platform add android@12.0.0
