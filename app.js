@@ -82,13 +82,15 @@ function displaySongs(songs) {
   });
 }
 
-document.getElementById("lyrics-container").textContent = song.lyrics.replaceAll("<br />", "\n").replaceAll("<br>", "\n");
-
 // Lancer une chanson
 function playSong(song) {
   document.getElementById('current-title').textContent = song.title;
   document.getElementById('current-artist').textContent = song.artist;
-  document.getElementById('lyrics-display').textContent = song.lyrics;
+  
+  const lyricsContainer = document.getElementById('lyrics-display');
+  if (lyricsContainer) {
+    lyricsContainer.textContent = song.lyrics ? song.lyrics.replaceAll("<br />", "\n").replaceAll("<br>", "\n") : '';
+  }
 
   const player = document.getElementById('audio-player');
   player.src = song.audio;
@@ -98,12 +100,12 @@ function playSong(song) {
   navigateTo('player-screen');
 }
 
-// Configuration du Worker PDF.js
+// Configuration du Worker PDF.js local
 if (typeof pdfjsLib !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.worker.min.js';
 }
 
-// Fonction pour charger et afficher toutes les pages du PDF
+// Fonction pour charger et afficher toutes les pages du PDF (compatible Cordova & hors-ligne)
 async function viewPDF(pdfUrl, title) {
   document.getElementById('pdf-view-title').innerText = title;
   const container = document.getElementById('pdf-scroll-container');
@@ -111,32 +113,50 @@ async function viewPDF(pdfUrl, title) {
   
   navigateTo('pdf-viewer-screen');
 
-  try {
-    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-    container.innerHTML = '';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', pdfUrl, true);
+  xhr.responseType = 'arraybuffer';
 
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const canvas = document.createElement('canvas');
-      canvas.className = 'pdf-page-canvas';
-      container.appendChild(canvas);
+  xhr.onload = async function() {
+    if (this.status === 200 || this.status === 0) { // status 0 est valide pour file:// dans Cordova
+      try {
+        const typedarray = new Uint8Array(this.response);
+        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+        container.innerHTML = '';
 
-      const context = canvas.getContext('2d');
-      const viewport = page.getViewport({ scale: 1.5 });
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const canvas = document.createElement('canvas');
+          canvas.className = 'pdf-page-canvas';
+          canvas.style.width = '100%';
+          container.appendChild(canvas);
 
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+          const context = canvas.getContext('2d');
+          const viewport = page.getViewport({ scale: 1.5 });
 
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport
-      };
-      await page.render(renderContext).promise;
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          };
+          await page.render(renderContext).promise;
+        }
+      } catch (error) {
+        console.error("Erreur lors de l'affichage du PDF:", error);
+        container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Misy olana ny hamakiana ny boky.</div>';
+      }
+    } else {
+      container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Tsy hita ny boky.</div>';
     }
-  } catch (error) {
-    console.error("Erreur lors du chargement du PDF:", error);
-    container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Tsy tafiditra ny boky. Rehefa manao test local ianao dia ampiasao ny server local (ex: Live Server).</div>';
-  }
+  };
+
+  xhr.onerror = function() {
+    container.innerHTML = '<div style="text-align:center; color:red; padding:20px;">Tsy tafiditra ny boky.</div>';
+  };
+
+  xhr.send();
 }
 
 function closePDFViewer() {
