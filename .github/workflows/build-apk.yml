@@ -34,7 +34,8 @@ jobs:
 
       - name: Telechargement des fichiers audio (175 Mo)
         run: |
-          wget --no-check-certificate 'https://drive.google.com/uc?export=download&id=1oD77wgmJQGb2EBu2Fca1WywGGCHO9sJO' -O assets.zip
+          pip install gdown
+          gdown https://drive.google.com/uc?id=1oD77wgmJQGb2EBu2Fca1WywGGCHO9sJO -O assets.zip
           unzip assets.zip -d build_assets
 
       - name: Preparation de l'environnement Cordova
