@@ -56,6 +56,7 @@ jobs:
           cp -r index.html build_tmp/www/ 2>/dev/null || true
           cp -r *.js build_tmp/www/ 2>/dev/null || true
           cp -r *.css build_tmp/www/ 2>/dev/null || true
+          cp -r images build_tmp/www/ 2>/dev/null || true
           cp -r build_assets/* build_tmp/www/ 2>/dev/null || true
 
       - name: Ajout de la plateforme Android et Build
