@@ -1,5 +1,5 @@
 // URL du fichier distant de mise à jour (à remplacer par votre véritable lien Web/Netlify)
-const UPDATE_URL = "https://ny-kalontsika-mpamakilay-mim.netlify.app//data.json";
+const UPDATE_URL = "https://nykalontsika.netlify.app//data.json";
 const CACHE_NAME = "kalontsika-audio-v1";
 
 // Chargement initial des données locales ou issues de la mise à jour (localStorage)
